@@ -1,4 +1,5 @@
-DROP SCHEMA IF EXISTS hub_dev.b_ops CASCADE;
+-- DROP SCHEMA IF EXISTS hub_dev.b_ops CASCADE;
+-- we can enable above statement if have a dedicated schema
 -- CREATE SCHEMA IF NOT EXISTS hub_dev.dbsql_warehouse_advisor;
 -- We will use b_ops schema
 
@@ -122,28 +123,29 @@ SELECT
         'QUERY_TAG:', ''
     ) AS raw_tagged,
 
-    SUBSTR(statement_text, 
-           INSTR(statement_text, '/*') + 2, 
-           INSTR(statement_text, '*/') - INSTR(statement_text, '/*') - 2) AS dbt_metadata_json,
+    -- Commenting dbt related features
+    -- SUBSTR(statement_text, 
+    --        INSTR(statement_text, '/*') + 2, 
+    --        INSTR(statement_text, '*/') - INSTR(statement_text, '/*') - 2) AS dbt_metadata_json,
 
     -- Error Messages
     error_message,
     COALESCE(REGEXP_EXTRACT(error_message, '\\[(.*?)\\]', 1), 'NO ERROR') AS error_type,
 
     -- Optional DBT Metadata
-    COALESCE(dbt_metadata_json:app, 'None') AS dbt_app,
-    COALESCE(dbt_metadata_json:node_id, 'None') AS dbt_node_id,
-    COALESCE(dbt_metadata_json:profile_name, 'None') AS dbt_profile_name,
-    COALESCE(dbt_metadata_json:target_name, 'None') AS dbt_target_name,
-    COALESCE(dbt_metadata_json:dbt_version, 'None') AS dbt_version,
-    COALESCE(dbt_metadata_json:dbt_databricks_version, 'None') AS dbt_databricks_version,
-    FROM_JSON(dbt_metadata_json, 'map<string,string>') AS parsed_dbt_comment,
+    -- COALESCE(dbt_metadata_json:app, 'None') AS dbt_app,
+    -- COALESCE(dbt_metadata_json:node_id, 'None') AS dbt_node_id,
+    -- COALESCE(dbt_metadata_json:profile_name, 'None') AS dbt_profile_name,
+    -- COALESCE(dbt_metadata_json:target_name, 'None') AS dbt_target_name,
+    -- COALESCE(dbt_metadata_json:dbt_version, 'None') AS dbt_version,
+    -- COALESCE(dbt_metadata_json:dbt_databricks_version, 'None') AS dbt_databricks_version,
+    -- FROM_JSON(dbt_metadata_json, 'map<string,string>') AS parsed_dbt_comment,
 
-    CASE 
-        WHEN (LOWER(dbt_metadata_json:app) = 'dbt' OR client_application LIKE '%dbt%') 
-        THEN 'DBT Query' 
-        ELSE 'Other Query Type' 
-    END AS IsDBTQuery,
+    -- CASE 
+    --     WHEN (LOWER(dbt_metadata_json:app) = 'dbt' OR client_application LIKE '%dbt%') 
+    --     THEN 'DBT Query' 
+    --     ELSE 'Other Query Type' 
+    -- END AS IsDBTQuery,
 
     CASE
       WHEN query_source.job_info.job_id IS NOT NULL THEN 'JOB'
