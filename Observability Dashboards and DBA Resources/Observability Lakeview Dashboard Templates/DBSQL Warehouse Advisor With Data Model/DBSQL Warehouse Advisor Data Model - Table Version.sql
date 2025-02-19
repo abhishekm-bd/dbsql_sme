@@ -1,11 +1,12 @@
-DROP SCHEMA IF EXISTS main.dbsql_warehouse_advisor CASCADE;
-CREATE SCHEMA IF NOT EXISTS main.dbsql_warehouse_advisor;
-  -- LOCATION 's3://<location>/'; -- Optional location parameter
-USE CATALOG main;
-USE SCHEMA dbsql_warehouse_advisor;
+DROP SCHEMA IF EXISTS hub_dev.b_ops CASCADE;
+-- CREATE SCHEMA IF NOT EXISTS hub_dev.dbsql_warehouse_advisor;
+-- We will use b_ops schema
 
+USE CATALOG hub_dev;
+USE SCHEMA b_ops;
 
-CREATE OR REPLACE TABLE main.dbsql_warehouse_advisor.warehouse_query_history
+-- all related tables will start with dbsql under b_ops schema
+CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_query_history
 CLUSTER BY (workspace_id, warehouse_id, start_time)
 COMMENT 'SQL Warehouse Query History with cleaned up exeuction metrics and query tags'
 AS 
@@ -165,7 +166,7 @@ AND statement_type IS NOT NULL
 
 -- Warehouse Usage
 
-CREATE OR REPLACE TABLE main.dbsql_warehouse_advisor.warehouse_usage
+CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_usage
 CLUSTER BY (workspace_id, warehouse_id,usage_start_time)
 COMMENT 'SQL Warehouse Usage'
 AS 
@@ -177,7 +178,7 @@ WHERE usage_metadata.warehouse_id IS NOT NULL;
 
 
 -- Warehouse Scaling History
-CREATE OR REPLACE TABLE main.dbsql_warehouse_advisor.warehouse_scaling_events
+CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_scaling_events
 CLUSTER BY (warehouse_id,event_time)
 COMMENT 'SQL Warehouse Scaling Events from warehouse_events table'
 AS
@@ -186,7 +187,7 @@ SELECT * FROM system.compute.warehouse_events;
 
 -- Warehouse SCD History
 -- Audit logs warehouse SCD history table (for names and other warehouse metadata such as sizing, owner, etc. )
-CREATE OR REPLACE TABLE main.dbsql_warehouse_advisor.warehouse_raw_events
+CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_raw_events
 CLUSTER BY (workspace_id, warehouse_id, event_time)
 AS 
     SELECT 
@@ -214,13 +215,13 @@ AS
 ;
 
 
-CREATE OR REPLACE VIEW main.dbsql_warehouse_advisor.warehouse_scd
+CREATE OR REPLACE VIEW hub_dev.b_ops.dbsql_warehouse_scd
 COMMENT 'SQL Warehouse SCD Change History'
 AS (
 WITH edit_history AS (
     SELECT 
         *
-    FROM main.dbsql_warehouse_advisor.warehouse_raw_events
+    FROM hub_dev.b_ops.dbsql_warehouse_raw_events
     WHERE action_name IN ('createWarehouse', 'createEndpoint')
     QUALIFY ROW_NUMBER() OVER (
         PARTITION BY warehouse_id
@@ -231,14 +232,14 @@ WITH edit_history AS (
 
     SELECT 
         *
-    FROM main.dbsql_warehouse_advisor.warehouse_raw_events
+    FROM hub_dev.b_ops.dbsql_warehouse_raw_events
     WHERE action_name IN ('editWarehouse', 'editEndpoint')
 
     UNION ALL
 
     SELECT 
         *
-    FROM main.dbsql_warehouse_advisor.warehouse_raw_events
+    FROM hub_dev.b_ops.dbsql_warehouse_raw_events
     WHERE action_name IN ('deleteWarehouse', 'deleteEndpoint')
 )
 
