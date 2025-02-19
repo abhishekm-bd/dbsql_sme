@@ -179,7 +179,7 @@ WHERE usage_metadata.warehouse_id IS NOT NULL;
 
 -- Warehouse Scaling History
 CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_scaling_events
-CLUSTER BY (warehouse_id,event_time)
+CLUSTER BY (warehouse_id,event_time) -- need to analyse the clustering keys
 COMMENT 'SQL Warehouse Scaling Events from warehouse_events table'
 AS
 SELECT * FROM system.compute.warehouse_events;
@@ -188,7 +188,7 @@ SELECT * FROM system.compute.warehouse_events;
 -- Warehouse SCD History
 -- Audit logs warehouse SCD history table (for names and other warehouse metadata such as sizing, owner, etc. )
 CREATE OR REPLACE TABLE hub_dev.b_ops.dbsql_warehouse_raw_events
-CLUSTER BY (workspace_id, warehouse_id, event_time)
+CLUSTER BY (workspace_id, warehouse_id, event_time) -- need to analyse the clustering keys
 AS 
     SELECT 
         event_time, 
